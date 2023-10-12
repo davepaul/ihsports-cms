@@ -1,7 +1,7 @@
 import NextAuth from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 
-export const authOptions = { 
+const authOptions = { 
   secret: process.env.NEXTAUTH_SECRET,
   providers : [
   CredentialsProvider({
@@ -12,21 +12,20 @@ export const authOptions = {
     },
     async authorize(credentials, req) {
 
-      // const res = await fetch("/your/endpoint", {
-      //   method: 'POST',
-      //   body: JSON.stringify(credentials),
-      //   headers: { "Content-Type": "application/json" }
-      // })
+      const res: any = await new Promise((resolve, reject) => {
+        resolve({ok: true, user: {user: 'Dave', token: 'asdfaf', access_token: 'asadsfdas'}});
+      });
+
       // const user = await res.json()
-      // if (res.ok && user) {
-      //   return user
-      // }
-      return {user: 'Dave', token: 'asdfaf', access_token: 'asadsfdas'}
+      if (res.ok && res.user) {
+        return res.user
+      }
+      return {user: 'Dave', token: 'asdfaf', access_token: 'asadsfdas', ...credentials};
     }
   }),
 ],
 callbacks: {
-  jwt: ({ token, user }) => {
+  jwt: ({ token, user }: any) => {
     if (user) {
       const { access_token, ...rest } = user;
       token.access_token = access_token;
@@ -45,7 +44,7 @@ callbacks: {
     }
     return token;
   },
-  async session({ session, token }) {
+  async session({ session, token }: any) {
     session.user = {
       ...session.user,
       ...token.user,
@@ -57,7 +56,7 @@ callbacks: {
 },
 };
 
-export const handler = NextAuth(authOptions);
+const handler = NextAuth(authOptions);
 
 export { handler as GET, handler as POST }
 
